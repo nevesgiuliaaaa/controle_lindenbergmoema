@@ -811,6 +811,14 @@ function buscarDocAuto(val){
   const v=DB.visitantes.find(x=>numeroDoc(x.documento)===numeroDoc(val));
   document.getElementById('visAuto').innerHTML=v?`<div style="background:var(--verde-bg);padding:10px;border-radius:6px;font-size:13px;color:var(--verde-tx);margin-bottom:10px">✅ Documento encontrado: ${esc(v.nome)} — ${esc(v.empresa)}. Usando cadastro existente.</div>`:'';
 }
+function registrarSaida(tipo,id){
+  const u=getUsuario();
+  const ms=movsDe(id,tipo);
+  const aberta=ms.find(m=>m.movimento==='entrada'&&!m.dataSaida);
+  if(aberta){ aberta.dataSaida=hoje(); aberta.horarioSaida=agora(); aberta.usuarioSaida=u.nome; }
+  else { DB.movimentacoes.push({id:uid(),tipo,refId:id,data:hoje(),horario:agora(),movimento:'saida',observacao:null,usuario:u.nome,dataSaida:hoje(),horarioSaida:agora(),usuarioSaida:u.nome}); }
+  salvarDB(); renderPagina(); toast('Saída registrada às '+agora(),'success');
+}
 function salvarEntradaVeiculo(){
   const u=getUsuario();
   let placa=document.getElementById('veicPlaca').value.trim().toUpperCase();
