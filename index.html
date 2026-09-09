@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LINDENBERG — Controle de Acesso</title>
 <style>
+  button, .btn, .chip, .autocomplete-item, tr.clickable, .actions-btn{
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 :root{
   --bordo:#7F1D26; --bordo2:#8B1D25; --grafite:#1A1A1A;
   --branco:#fff; --fundo:#F5F5F5; --texto:#333; --texto2:#666;
@@ -438,7 +442,7 @@ function painelEncontrado(tipo,ref){
       <div style="flex:1;min-width:200px"><h3 style="margin:0">${tipo==='veiculo'?'🚗':''} ${esc(nome)}</h3><p style="color:var(--texto2);font-size:13px">${esc(sub)}<br>Empresa: ${esc(ref.empresa)}</p>
         <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap"><span style="font-size:13px;color:var(--texto2)">Total de visitas: <b>${ms.length}</b></span><span style="font-size:13px;color:var(--texto2)">Última movimentação: <b>${um?fmtDataHora(um.data,um.horario):'—'}</b></span><span>${pillStatus(dentro)}</span></div>
       </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">${dentro?`<button class="btn btn-primary" onclick="registrarSaida('${tipo}','${ref.id}')">Registrar Saída</button>`:`<button class="btn btn-primary" onclick="abrirRegistroEntrada('${tipo}','${ref.id}')">Registrar Entrada</button>`}<button class="btn btn-outline" onclick="abrirPerfil('${tipo}','${ref.id}')">Ver histórico completo →</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${dentro?`<button class="btn btn-primary" onclick="event.stopPropagation();registrarSaida('${tipo}','${ref.id}')">Registrar Saída</button>`:`<button class="btn btn-primary" onclick="event.stopPropagation();abrirRegistroEntrada('${tipo}','${ref.id}')">Registrar Entrada</button>`}<button class="btn btn-outline" onclick="event.stopPropagation();abrirPerfil('${tipo}','${ref.id}')">Ver histórico completo →</button></div>
     </div>
     <h4 style="font-size:14px;color:var(--texto);margin-bottom:10px">Últimas visitas</h4>
     <div class="table-wrap"><table><thead><tr><th>Data</th><th>Horário</th><th>Movimento</th></tr></thead><tbody>${ms.slice(0,5).map(m=>`<tr><td>${fmtData(m.data)}</td><td>${m.horario}</td><td>${pillMov(m.movimento)}</td></tr>`).join('')}</tbody></table></div>
@@ -528,7 +532,7 @@ function renderPerfil(){
       <div class="profile-info"><h2>${tipo==='veiculo'?'🚗 ':''}${esc(nome)}</h2><p>${tipo==='veiculo'?`Motorista: ${esc(ref.motorista)}`:`Documento: ${esc(ref.documento)}`} • Empresa: ${esc(ref.empresa)}</p>
         <div class="profile-stats"><div class="stat"><b>${ms.length}</b>Total de visitas</div><div class="stat"><b>${um?fmtDataHora(um.data,um.horario):'—'}</b>Última movimentação</div><div class="stat"><b>${dentro?'Dentro':'Fora'}</b>Status atual</div></div>
       </div>
-      <div style="margin-left:auto">${dentro?`<button class="btn btn-primary" onclick="registrarSaida('${tipo}','${id}')">Registrar Saída</button>`:`<button class="btn btn-primary" onclick="abrirRegistroEntrada('${tipo}','${id}')">Registrar Entrada</button>`}</div>
+      <div style="margin-left:auto">${dentro?`<button class="btn btn-primary" onclick="event.stopPropagation();registrarSaida('${tipo}','${id}')">Registrar Saída</button>`:`<button class="btn btn-primary" onclick="event.stopPropagation();abrirRegistroEntrada('${tipo}','${id}')">Registrar Entrada</button>`}</div>
     </div>
     <div class="tabs"><button class="${estado.abaPerfil==='historico'?'active':''}" onclick="estado.abaPerfil='historico';renderPerfil()">Histórico</button><button class="${estado.abaPerfil==='fotos'?'active':''}" onclick="estado.abaPerfil='fotos';renderPerfil()">Fotos</button></div>
     ${estado.abaPerfil==='historico'?`<div class="table-wrap"><table><thead><tr><th>Data</th><th>Horário</th><th>Movimento</th><th>Observação</th><th>Usuário</th></tr></thead><tbody>${ms.map(m=>`<tr><td>${fmtData(m.data)}</td><td>${m.horario}</td><td>${pillMov(m.movimento)}</td><td>${esc(m.observacao||'—')}</td><td>${esc(m.movimento==='saida'?(m.usuarioSaida||m.usuario):m.usuario)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--texto2)">Sem histórico</td></tr>'}</tbody></table></div>`:`<div style="display:flex;gap:12px;flex-wrap:wrap">${ref.foto?`<img src="${ref.foto}" style="width:120px;height:120px;object-fit:cover;border-radius:8px">`:`<div style="color:var(--texto2);padding:20px">Nenhuma foto cadastrada.</div>`}</div>`}
