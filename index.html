@@ -734,6 +734,8 @@ function setTipoDoc(t){
 /* ============ NOVO REGISTRO ============ */
 function abrirNovoRegistro(){
   if(estado.pagina==='toalhas'){ abrirNovaToalha(); return; }
+  if(estado.pagina==='veiculos'){ abrirRegistroEntrada('veiculo',null); return; }
+  if(estado.pagina==='visitantes'){ abrirRegistroEntrada('visitante',null); return; }
   abrirModal(`<h3>Novo Registro</h3><p style="color:var(--texto2);margin-bottom:16px">O que deseja registrar?</p><div style="display:grid;gap:10px"><button class="btn btn-primary" onclick="abrirRegistroEntrada('veiculo',null)">🚗 Registrar Entrada de Veículo</button><button class="btn btn-primary" onclick="abrirRegistroEntrada('visitante',null)">👤 Registrar Visitante</button><button class="btn btn-outline" onclick="abrirRegistroSaida()">Registrar Saída</button></div>`);
 }
 function abrirRegistroSaida(){
