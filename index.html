@@ -241,12 +241,44 @@ function storageRemove(key){ try{ localStorage.removeItem(key); }catch(e){} dele
 /* ============ BANCO DE DADOS ============ */
 const DB_KEY='lindenberg_v1', SES_KEY='lindenberg_sessao';
 let DB=null, sessao=null, estado={pagina:'inicio', filtroVeic:'todos', filtroVisit:'todos', pagVeic:1, pagVisit:1, pagToalha:1, mesAtual:'2026-09', abaToalha:'diario', diaToalha:null, abaHistorico:'veiculos', abaPerfil:'historico'};
-
 function carregarDB(){
   const raw=storageGet(DB_KEY);
-  if(raw){ try{ DB=JSON.parse(raw); return; }catch(e){} }
-  DB={usuarios:[],veiculos:[],visitantes:[],movimentacoes:[],toalhas:[],config:{estoqueInicial:{},observacoes:{},empresa:{nome:'LINDENBERG Engenharia',endereco:''}}};
-  semear(); salvarDB();
+  if(raw){
+    try{
+      const dados=JSON.parse(raw);
+      if(dados&&typeof dados==='object'){
+        DB=normalizarDB(dados);   /* completa estrutura SEM apagar nada */
+        return;
+      }
+    }catch(e){
+      /* JSON corrompido: NUNCA apagar em silêncio — guarda cópia antes */
+      try{ storageSet('lindenberg_corrompido_'+Date.now(),raw); }catch(_){}
+      console.warn('Banco corrompido — cópia de segurança salva. Iniciando novo.');
+    }
+  }
+  DB=novoDB();
+  semear();
+  salvarDB();
+}
+
+function novoDB(){
+  return {versao:1,usuarios:[],veiculos:[],visitantes:[],movimentacoes:[],toalhas:[],config:{estoqueInicial:{},observacoes:{},empresa:{nome:'LINDENBERG Engenharia',endereco:''}}};
+}
+
+function normalizarDB(d){
+  const base=novoDB();
+  /* 1) chaves que faltam entram com valor padrão — registros existentes ficam intactos */
+  Object.keys(base).forEach(k=>{ if(d[k]===undefined)d[k]=base[k]; });
+  ['usuarios','veiculos','visitantes','movimentacoes','toalhas'].forEach(k=>{ if(!Array.isArray(d[k]))d[k]=[]; });
+  if(!d.config||typeof d.config!=='object')d.config={};
+  if(!d.config.estoqueInicial||typeof d.config.estoqueInicial!=='object')d.config.estoqueInicial={};
+  if(!d.config.observacoes||typeof d.config.observacoes!=='object')d.config.observacoes={};
+  if(!d.config.empresa||typeof d.config.empresa!=='object')d.config.empresa={};
+  else d.config.empresa={...base.config.empresa,...d.config.empresa};
+  if(d.versao===undefined)d.versao=1;
+  /* 2) migrações futuras entram AQUI, preservando o histórico:
+     if(d.versao<2){ /* converte dados antigos para o formato novo *\/ d.versao=2; } */
+  return d;
 }
 function salvarDB(){ storageSet(DB_KEY,JSON.stringify(DB)); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -632,12 +664,30 @@ function renderConfig(){
   const c=document.getElementById('content');
   c.innerHTML=`<div class="cards" style="grid-template-columns:1fr 1fr">
     <div class="panel" style="margin:0"><h3>🏢 Dados da empresa</h3><div class="field"><label>Nome</label><input id="cfgNome" value="${esc(DB.config.empresa.nome)}"></div><div class="field"><label>Endereço</label><input id="cfgEnd" value="${esc(DB.config.empresa.endereco)}"></div><button class="btn btn-primary btn-sm" onclick="salvarEmpresa()">Salvar</button></div>
-    <div class="panel" style="margin:0"><h3>👤 Meu perfil</h3><div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">${avatarHtml(u,56)}<div><b>${esc(u.nome)}</b><br><span style="color:var(--texto2);font-size:12px">${esc(u.funcao)}</span></div></div><div class="field"><label>Nome</label><input id="pfNome" value="${esc(u.nome)}"></div><div class="field"><label>Função</label><input id="pfFuncao" value="${esc(u.funcao)}"></div><button class="btn btn-primary btn-sm" onclick="salvarPerfil()">Salvar perfil</button></div>
+    <div class="panel" style="margin:0"><h3>👤 Meu perfil</h3>...</div>
+    <div class="panel" style="margin:0"><h3>💾 Backup dos dados</h3>
+      <p style="color:var(--texto2);font-size:13px">Exporte ou restaure todos os dados do sistema (estoque, retiradas, devoluções, histórico e configurações).</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn btn-primary btn-sm" onclick="exportarBackup()">📥 Exportar Backup</button>
+        <button class="btn btn-ghost btn-sm" onclick="importarBackup()">📤 Importar Backup</button>
+      </div>
+    </div>
   </div>`;
-}
-function salvarEmpresa(){ DB.config.empresa.nome=document.getElementById('cfgNome').value; DB.config.empresa.endereco=document.getElementById('cfgEnd').value; salvarDB(); toast('Empresa atualizada','success'); }
+}function salvarEmpresa(){ DB.config.empresa.nome=document.getElementById('cfgNome').value; DB.config.empresa.endereco=document.getElementById('cfgEnd').value; salvarDB(); toast('Empresa atualizada','success'); }
 function salvarPerfil(){ const u=getUsuario(); u.nome=document.getElementById('pfNome').value; u.funcao=document.getElementById('pfFuncao').value; salvarDB(); toast('Perfil atualizado','success'); renderConfig(); }
-
+/* ===== BACKUP ===== */
+function exportarBackup(){
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  const nome='backup_toalhas_'+d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+'-'+p(d.getMinutes())+'.json';
+  const pacote={app:'lindenberg',tipo:'backup',versao:1,criadoEm:new Date().toISOString(),
+    dados:JSON.parse(JSON.stringify(DB))};  /* cópia fiel de TUDO: estoques, pessoas, placas, histórico, config */
+  const blob=new Blob([JSON.stringify(pacote,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=nome;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast('Backup exportado: '+nome,'success');
+}
 /* ============ AÇÕES / MENU ⋯ ============ */
 function menuAcoes(tipo,id){
   return `<div class="dropdown"><button class="actions-btn" onclick="event.stopPropagation();toggleMenu(this)">⋯</button><div class="dropdown-menu"><button onclick="event.stopPropagation();abrirPerfil('${tipo}','${id}')">👁 Visualizar</button><button onclick="event.stopPropagation();editarRegistro('${tipo}','${id}')">✏️ Editar</button><button onclick="event.stopPropagation();confirmarExcluir('${tipo}','${id}')">🗑 Excluir</button></div></div>`;
