@@ -260,84 +260,9 @@ function numeroDoc(v){ return (v||'').replace(/\D/g,''); }
 /* ============ SEMEADOR ============ */
 function semear(){
   DB.usuarios.push({id:uid(),nome:'Portaria',email:'portaria@lindenberg.com',senha:'Limoema26',funcao:'Portaria',foto:'',ativo:true});
-  const g='Portaria';
-  const v1={id:uid(),placa:'ABC1D23',motorista:'Carlos Henrique Souza',empresa:'Construtora XYZ',foto:'',observacao:'Entrega de materiais',dataCadastro:'2026-08-20',usuario:g};
-  const v2={id:uid(),placa:'FGH5I67',motorista:'Marcos Oliveira',empresa:'Transportadora Silva',foto:'',observacao:'Visita técnica',dataCadastro:'2026-08-22',usuario:g};
-  const v3={id:uid(),placa:'QWE8J90',motorista:'João Santos',empresa:'Construtora ABC',foto:'',observacao:'Reunião',dataCadastro:'2026-08-25',usuario:g};
-  const v4={id:uid(),placa:'RTY4U12',motorista:'Paulo Mendes',empresa:'Fornecedor Beta',foto:'',observacao:'Entrega de documentos',dataCadastro:'2026-08-28',usuario:g};
-  const v5={id:uid(),placa:'ZXC7V34',motorista:'Rafael Lima',empresa:'Construtora XYZ',foto:'',observacao:'Manutenção',dataCadastro:'2026-09-01',usuario:g};
-  const v6={id:uid(),placa:'BNM8N56',motorista:'Fernando Oliveira',empresa:'Transportadora Silva',foto:'',observacao:'Entrega de materiais',dataCadastro:'2026-09-02',usuario:g};
-  const v7={id:uid(),placa:'ASD2F78',motorista:'Pedro Almeida',empresa:'Construtora ABC',foto:'',observacao:'Visita técnica',dataCadastro:'2026-09-03',usuario:g};
-  const v8={id:uid(),placa:'JKL9K90',motorista:'Bruno Castro',empresa:'Fornecedor Beta',foto:'',observacao:'Reunião',dataCadastro:'2026-09-04',usuario:g};
-  const v9={id:uid(),placa:'POI0L12',motorista:'Diego Rocha',empresa:'Construtora XYZ',foto:'',observacao:'Prestação de serviço',dataCadastro:'2026-09-05',usuario:g};
-  const v10={id:uid(),placa:'MNB1Q34',motorista:'Lucas Ferreira',empresa:'Transportadora Silva',foto:'',observacao:'Entrega de materiais',dataCadastro:'2026-09-06',usuario:g};
-  DB.veiculos.push(v1,v2,v3,v4,v5,v6,v7,v8,v9,v10);
-  const vi1={id:uid(),nome:'Mariana Costa Lima',documento:'123.456.789-00',empresa:'Cliente',foto:'',observacao:'Reunião',dataCadastro:'2026-08-18',usuario:g};
-  const vi2={id:uid(),nome:'João Pedro Silva',documento:'987.654.321-00',empresa:'Fornecedor',foto:'',observacao:'Entrega de materiais',dataCadastro:'2026-08-19',usuario:g};
-  const vi3={id:uid(),nome:'Ana Beatriz Souza',documento:'456.789.123-00',empresa:'Arquiteta',foto:'',observacao:'Visita técnica',dataCadastro:'2026-08-21',usuario:g};
-  const vi4={id:uid(),nome:'Rafael Lima',documento:'111.222.333-44',empresa:'Construtora XYZ',foto:'',observacao:'Reunião',dataCadastro:'2026-08-23',usuario:g};
-  const vi5={id:uid(),nome:'Fernando Oliveira',documento:'555.666.777-88',empresa:'Cliente',foto:'',observacao:'Entrega de documentos',dataCadastro:'2026-08-26',usuario:g};
-  const vi6={id:uid(),nome:'Pedro Almeida',documento:'999.888.777-66',empresa:'Transportadora Silva',foto:'',observacao:'Manutenção',dataCadastro:'2026-08-27',usuario:g};
-  const vi7={id:uid(),nome:'Carla Nunes',documento:'222.333.444-55',empresa:'Fornecedor',foto:'',observacao:'Prestação de serviço',dataCadastro:'2026-09-01',usuario:g};
-  const vi8={id:uid(),nome:'Beatriz Ramos',documento:'333.444.555-66',empresa:'Arquiteta',foto:'',observacao:'Visita técnica',dataCadastro:'2026-09-02',usuario:g};
-  const vi9={id:uid(),nome:'Thiago Alves',documento:'444.555.666-77',empresa:'Cliente',foto:'',observacao:'Reunião',dataCadastro:'2026-09-03',usuario:g};
-  const vi10={id:uid(),nome:'Juliana Prado',documento:'666.777.888-99',empresa:'Construtora ABC',foto:'',observacao:'Entrega de materiais',dataCadastro:'2026-09-04',usuario:g};
-  DB.visitantes.push(vi1,vi2,vi3,vi4,vi5,vi6,vi7,vi8,vi9,vi10);
-  function mov(tipo,ref,data,horario,movimento,obs){ DB.movimentacoes.push({id:uid(),tipo,refId:ref.id,data,horario,movimento,observacao:obs,usuario:g,usuarioSaida:g,dataSaida:movimento==='saida'?data:null,horarioSaida:movimento==='saida'?horario:null}); }
-  mov('veiculo',v1,'2026-09-01','08:14','entrada','Entrega de materiais'); mov('veiculo',v1,'2026-09-01','16:40','saida',null);
-  mov('veiculo',v1,'2026-08-28','08:03','entrada','Manutenção'); mov('veiculo',v1,'2026-08-28','17:20','saida',null);
-  mov('veiculo',v1,'2026-08-25','07:58','entrada','Entrega de materiais'); mov('veiculo',v1,'2026-08-25','16:45','saida',null);
-  DB.movimentacoes.push({id:uid(),tipo:'veiculo',refId:v1.id,data:'2026-09-08',horario:'08:14',movimento:'entrada',observacao:'Entrega de materiais',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  mov('veiculo',v2,'2026-09-08','09:47','saida',null); mov('veiculo',v2,'2026-09-08','07:30','entrada','Visita técnica');
-  DB.movimentacoes.push({id:uid(),tipo:'veiculo',refId:v3.id,data:'2026-09-08',horario:'09:12',movimento:'entrada',observacao:'Reunião',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  DB.movimentacoes.push({id:uid(),tipo:'veiculo',refId:v4.id,data:'2026-09-08',horario:'09:20',movimento:'entrada',observacao:'Entrega de documentos',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  DB.movimentacoes.push({id:uid(),tipo:'veiculo',refId:v5.id,data:'2026-09-08',horario:'08:40',movimento:'entrada',observacao:'Manutenção',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vi1.id,data:'2026-09-08',horario:'08:30',movimento:'entrada',observacao:'Reunião',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vi1.id,data:'2026-09-05',horario:'14:22',movimento:'entrada',observacao:'Reunião',usuario:g,dataSaida:'2026-09-05',horarioSaida:'16:00',usuarioSaida:g});
-  DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vi2.id,data:'2026-09-08',horario:'09:30',movimento:'entrada',observacao:'Entrega de materiais',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vi3.id,data:'2026-09-08',horario:'08:12',movimento:'saida',observacao:null,usuario:g,dataSaida:'2026-09-08',horarioSaida:'08:12',usuarioSaida:g});
-  DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vi3.id,data:'2026-09-08',horario:'07:00',movimento:'entrada',observacao:'Visita técnica',usuario:g,dataSaida:'2026-09-08',horarioSaida:'08:12',usuarioSaida:g});
-  DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vi4.id,data:'2026-09-08',horario:'10:11',movimento:'entrada',observacao:'Reunião',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vi5.id,data:'2026-09-08',horario:'08:05',movimento:'entrada',observacao:'Entrega de documentos',usuario:g,dataSaida:null,horarioSaida:null,usuarioSaida:null});
-  const nomesT=[['João Pedro Silva','Fornecedor ABC'],['Mariana Costa Lima','Cliente'],['Carlos Henrique Souza','Construtora XYZ'],['Ana Beatriz Souza','Arquiteta'],['Rafael Lima','Construtora XYZ'],['Fernando Oliveira','Cliente'],['Pedro Almeida','Transportadora Silva'],['Carla Nunes','Fornecedor'],['Beatriz Ramos','Arquiteta'],['Thiago Alves','Cliente'],['Juliana Prado','Construtora ABC'],['Paulo Mendes','Fornecedor Beta'],['Bruno Castro','Construtora ABC'],['Diego Rocha','Construtora XYZ']];
-  function addToalha(mes,data,horario,nome,empresa,entregue,devolvido,qtd){ DB.toalhas.push({id:uid(),mes,data,horario,nome,empresa,responsavel:g,quantidade:qtd||1,entregue,devolvido,observacao:'',usuario:g}); }
-  addToalha('2026-09','2026-09-08','16:30','João Pedro Silva','Fornecedor ABC',false,true);
-  addToalha('2026-09','2026-09-08','14:22','Mariana Costa Lima','Cliente',true,false);
-  addToalha('2026-09','2026-09-08','10:15','Carlos Henrique Souza','Construtora XYZ',true,false);
-  addToalha('2026-09','2026-09-08','09:47','Ana Beatriz Souza','Arquiteta',false,true);
-  addToalha('2026-09','2026-09-08','08:30','Rafael Lima','Construtora XYZ',true,false);
-  addToalha('2026-09','2026-09-07','17:12','Fernando Oliveira','Cliente',true,false);
-  addToalha('2026-09','2026-09-07','15:48','Pedro Almeida','Transportadora Silva',false,true);
-  addToalha('2026-09','2026-09-07','11:20','Carla Nunes','Fornecedor',true,false);
-  addToalha('2026-09','2026-09-07','09:05','Beatriz Ramos','Arquiteta',false,true);
-  addToalha('2026-09','2026-09-06','16:10','Thiago Alves','Cliente',true,false);
-  addToalha('2026-09','2026-09-06','13:40','Juliana Prado','Construtora ABC',true,false);
-  addToalha('2026-09','2026-09-06','10:22','Paulo Mendes','Fornecedor Beta',false,true);
-  addToalha('2026-09','2026-09-06','08:15','Bruno Castro','Construtora ABC',true,false);
-  addToalha('2026-09','2026-09-05','17:30','Diego Rocha','Construtora XYZ',true,false);
-  addToalha('2026-09','2026-09-05','14:05','João Pedro Silva','Fornecedor ABC',true,false);
-  addToalha('2026-09','2026-09-05','11:45','Mariana Costa Lima','Cliente',false,true);
-  addToalha('2026-09','2026-09-05','09:18','Carlos Henrique Souza','Construtora XYZ',true,false);
-  addToalha('2026-09','2026-09-04','16:55','Ana Beatriz Souza','Arquiteta',true,false);
-  addToalha('2026-09','2026-09-04','13:12','Rafael Lima','Construtora XYZ',false,true);
-  addToalha('2026-09','2026-09-04','10:48','Fernando Oliveira','Cliente',true,false);
-  addToalha('2026-09','2026-09-04','08:33','Pedro Almeida','Transportadora Silva',true,false);
-  addToalha('2026-09','2026-09-03','17:02','Carla Nunes','Fornecedor',true,false);
-  addToalha('2026-09','2026-09-03','14:27','Beatriz Ramos','Arquiteta',true,false);
-  addToalha('2026-09','2026-09-03','09:50','Thiago Alves','Cliente',false,true);
-  addToalha('2026-09','2026-09-02','16:44','Juliana Prado','Construtora ABC',true,false);
-  addToalha('2026-09','2026-09-02','12:19','Paulo Mendes','Fornecedor Beta',true,false);
-  addToalha('2026-09','2026-09-02','08:58','Bruno Castro','Construtora ABC',false,true);
-  addToalha('2026-09','2026-09-01','17:21','Diego Rocha','Construtora XYZ',true,false);
-  addToalha('2026-09','2026-09-01','15:36','João Pedro Silva','Fornecedor ABC',true,false);
-  const ago=['2026-08-31','2026-08-29','2026-08-28','2026-08-27','2026-08-26','2026-08-25'];
-  const horasAgo=['16:10','13:05','10:30','08:20','17:40','14:25','11:15','09:00','16:50','12:35','08:45','15:20','10:05','17:15','13:50'];
-  for(let i=0;i<15;i++){ const n=nomesT[i%nomesT.length]; addToalha('2026-08',ago[i%ago.length],horasAgo[i],n[0],n[1],i%3!==0,i%3===0); }
-  for(let i=0;i<8;i++){ const n=nomesT[i%nomesT.length]; addToalha('2026-07','2026-07-2'+(i%9),horasAgo[i],n[0],n[1],i%2===0,i%2!==0); }
-  DB.config.estoqueInicial['2026-09']=200; DB.config.estoqueInicial['2026-08']=200; DB.config.estoqueInicial['2026-07']=200;
-  DB.config.observacoes['2026-09']='';
+  const mes=hoje().slice(0,7);
+  DB.config.estoqueInicial[mes]=27;
 }
-
 /* ============ HELPERS ============ */
 function getUsuario(){ return DB.usuarios.find(u=>u.id===sessao)||DB.usuarios[0]; }
 function iniciais(nome){ const p=nome.trim().split(/\s+/); return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase(); }
@@ -779,7 +704,7 @@ function abrirRegistroEntrada(tipo,id){
       <div id="veicAuto"></div>
       <div class="field"><label>Nome do motorista *</label><input id="veicMotorista" value="${ref?esc(ref.motorista):''}"></div>
       <div class="field"><label>Empresa</label><input id="veicEmpresa" value="${ref?esc(ref.empresa):''}"></div>
-      <div class="field"><label>Observação / Motivo da visita *</label><select id="veicObs"><option>Entrega de materiais</option><option>Visita técnica</option><option>Reunião</option><option>Manutenção</option><option>Prestação de serviço</option><option>Entrega de documentos</option></select></div>
+      <div class="field"><label>Observação / Motivo da visita *</label><select id="veicObs"><option>Retirada de terra</option><option>Entulho</option><option>Entrega de material</option><option>Água</option></select></div>
       <div class="field"><label>Foto da placa</label><div class="photo-preview" id="veicFotoPrev">Sem foto</div><div class="photo-btns"><button class="btn btn-outline btn-sm" onclick="tirarFoto('veicFotoPrev','veicFoto')">📷 Tirar foto</button><button class="btn btn-outline btn-sm" onclick="document.getElementById('veicFotoFile').click()">📁 Selecionar arquivo</button><input type="file" id="veicFotoFile" accept="image/*" style="display:none" onchange="lerArquivoFoto(this,'veicFotoPrev','veicFoto')"></div><input type="hidden" id="veicFoto"></div>
       <div class="modal-actions"><button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEntradaVeiculo()">Registrar Entrada</button></div>`);
     const veicItens=DB.veiculos.map(v=>{ const um=ultimaMov(v.id,'veiculo'), ms=movsDe(v.id,'veiculo'); return {busca:(v.placa+' '+v.motorista+' '+v.empresa).toLowerCase(),icon:'🚗',titulo:v.placa,sub:'Motorista: '+v.motorista+' • Empresa: '+v.empresa+' • '+ms.length+' visita(s) • Última: '+(um?fmtDataHora(um.data,um.horario):'—'),dados:v}; });
