@@ -241,26 +241,85 @@ function storageRemove(key){ try{ localStorage.removeItem(key); }catch(e){} dele
 /* ============ BANCO DE DADOS ============ */
 const DB_KEY='lindenberg_v1', SES_KEY='lindenberg_sessao';
 let DB=null, sessao=null, estado={pagina:'inicio', filtroVeic:'todos', filtroVisit:'todos', pagVeic:1, pagVisit:1, pagToalha:1, mesAtual:'2026-09', abaToalha:'diario', diaToalha:null, abaHistorico:'veiculos', abaPerfil:'historico'};
-function carregarDB(){
-  const raw=storageGet(DB_KEY);
-  if(raw){
-    try{
-      const dados=JSON.parse(raw);
-      if(dados&&typeof dados==='object'){
-        DB=normalizarDB(dados);   /* completa estrutura SEM apagar nada */
-        return;
-      }
-    }catch(e){
-      /* JSON corrompido: NUNCA apagar em silêncio — guarda cópia antes */
-      try{ storageSet('lindenberg_corrompido_'+Date.now(),raw); }catch(_){}
-      console.warn('Banco corrompido — cópia de segurança salva. Iniciando novo.');
-    }
-  }
-  DB=novoDB();
-  semear();
-  salvarDB();
+/* ===== SUPABASE — BANCO ONLINE (sincroniza entre aparelhos) ===== */
+const SUPABASE_URL='https://lhlzqeazgljnpxedphkr.supabase.co';
+const SUPABASE_ANON='sb_publishable_t9gtVUH5C-VjUftoWWns5Q_42GQAyhB';
+const SUPABASE_TABELA='app_data';
+const SUPABASE_LINHA='principal';
+
+function supabaseRest(caminho, opcoes){
+  return fetch(SUPABASE_URL+'/rest/v1/'+caminho, Object.assign({
+    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'}
+  }, opcoes||{}));
 }
 
+function novoDB(){
+  return {versao:1, usuarios:[], veiculos:[], visitantes:[], movimentacoes:[], toalhas:[],
+    config:{estoqueInicial:{}, observacoes:{}, empresa:{nome:'LINDENBERG Engenharia', endereco:''}}};
+}
+
+function normalizarDB(d){
+  const base=novoDB();
+  Object.keys(base).forEach(k=>{ if(d[k]===undefined) d[k]=base[k]; });
+  ['usuarios','veiculos','visitantes','movimentacoes','toalhas'].forEach(k=>{ if(!Array.isArray(d[k])) d[k]=[]; });
+  if(!d.config||typeof d.config!=='object') d.config={};
+  if(!d.config.estoqueInicial||typeof d.config.estoqueInicial!=='object') d.config.estoqueInicial={};
+  if(!d.config.observacoes||typeof d.config.observacoes!=='object') d.config.observacoes={};
+  if(!d.config.empresa||typeof d.config.empresa!=='object') d.config.empresa={...base.config.empresa};
+  else d.config.empresa={...base.config.empresa, ...d.config.empresa};
+  if(d.versao===undefined) d.versao=1;
+  return d;
+}
+
+function salvarDB(){
+  DB.atualizadoEm=new Date().toISOString();
+  storageSet(DB_KEY, JSON.stringify(DB));   /* 1º: local (rápido e offline) */
+  supabaseRest(SUPABASE_TABELA+'?id=eq.'+SUPABASE_LINHA, {
+    method:'POST',
+    body:JSON.stringify({id:SUPABASE_LINHA, data:DB}),
+    headers:{'Prefer':'resolution=merge-duplicates'}
+  }).then(r=>{ if(!r.ok) console.warn('Supabase: erro ao salvar (código '+r.status+')'); })
+    .catch(()=>console.warn('Supabase: offline — salvo apenas neste aparelho.'));
+}
+
+function carregarDB(){
+  const raw=storageGet(DB_KEY);
+  let tinhaLocal=false;
+  if(raw){
+    try{ DB=normalizarDB(JSON.parse(raw)); tinhaLocal=true; }
+    catch(e){ try{ storageSet('lindenberg_corrompido_'+Date.now(), raw); }catch(_){} }
+  }
+  if(!DB||typeof DB!=='object'){ DB=novoDB(); semear(); }
+  if(tinhaLocal) storageSet(DB_KEY, JSON.stringify(DB));
+  carregarRemoto(tinhaLocal);
+}
+
+function carregarRemoto(tinhaLocal){
+  supabaseRest(SUPABASE_TABELA+'?id=eq.'+SUPABASE_LINHA+'&select=data')
+    .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+    .then(linhas=>{
+      const remoto=(linhas&&linhas[0]&&linhas[0].data)||null;
+      const remotoOk=remoto&&typeof remoto==='object';
+      if(remotoOk){
+        const remotoT=new Date(remoto.atualizadoEm||0).getTime()||0;
+        const localT=DB.atualizadoEm?new Date(DB.atualizadoEm).getTime():0;
+        const antes=JSON.stringify(DB);
+        if(!tinhaLocal || remotoT>localT){           /* nuvem mais nova (ou aparelho novo) */
+          DB=normalizarDB(remoto);
+          storageSet(DB_KEY, JSON.stringify(DB));
+        } else if(localT>remotoT){                   /* local mais novo: corrige a nuvem */
+          salvarDB();
+        }
+        if(antes!==JSON.stringify(DB)){
+          if(typeof renderMenu==='function') renderMenu();
+          if(typeof renderPagina==='function') renderPagina();
+        }
+      } else if(tinhaLocal){                         /* nuvem vazia: sobe os dados locais */
+        salvarDB();
+      }
+    })
+    .catch(()=>{ /* offline: segue com os dados locais */ });
+}
 function novoDB(){
   return {versao:1,usuarios:[],veiculos:[],visitantes:[],movimentacoes:[],toalhas:[],config:{estoqueInicial:{},observacoes:{},empresa:{nome:'LINDENBERG Engenharia',endereco:''}}};
 }
@@ -280,7 +339,6 @@ function normalizarDB(d){
      if(d.versao<2){ /* converte dados antigos para o formato novo *\/ d.versao=2; } */
   return d;
 }
-function salvarDB(){ storageSet(DB_KEY,JSON.stringify(DB)); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function hoje(){ const d=new Date(); return d.toISOString().slice(0,10); }
 function agora(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
