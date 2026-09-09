@@ -541,6 +541,7 @@ function renderPerfil(){
 
 /* ============ CONTROLE DE TOALHAS ============ */
 function renderToalhas(){
+
   const u=getUsuario();
   const mes=estado.mesAtual;
   const regs=DB.toalhas.filter(t=>t.mes===mes);
@@ -577,6 +578,21 @@ function renderToalhas(){
     <div class="panel" style="margin:0"><h3>Observações</h3><textarea id="obsMes" placeholder="Adicionar observação do mês..." style="min-height:70px;resize:vertical">${esc(DB.config.observacoes[mes]||'')}</textarea><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="salvarObservacao()">Salvar</button></div>
   </div>`;
   if(estado.abaToalha==='diario')renderToalhaDiario(); else renderToalhaConsolidado();
+}
+function editarEstoqueInicial(){
+  const mes=estado.mesAtual||hoje().slice(0,7);
+  const atual=DB.config.estoqueInicial[mes]||0;
+  abrirModal(`<h3>Estoque Inicial — ${mes}</h3>
+    <div class="field"><label>Quantidade de toalhas no estoque inicial</label><input type="number" id="eiValor" value="${atual}" min="0"></div>
+    <div class="dica">Este valor é a base de todos os cálculos (estoque atual, saldo devedor, gráficos e relatórios).</div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEstoqueInicial()">Salvar</button></div>`);
+}
+function salvarEstoqueInicial(){
+  const mes=estado.mesAtual||hoje().slice(0,7);
+  const v=parseInt(document.getElementById('eiValor').value);
+  if(isNaN(v)||v<0){ toast('Informe um valor válido','error'); return; }
+  DB.config.estoqueInicial[mes]=v;
+  salvarDB(); fecharModal(); renderToalhas(); toast('Estoque inicial atualizado para '+v+' toalhas','success');
 }
 function renderToalhaDiario(){
   const mes=estado.mesAtual;
