@@ -345,6 +345,14 @@ function toast(msg,tipo){ const t=document.getElementById('toast'); t.textConten
 function movsDe(refId,tipo){ return DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo).sort((a,b)=>(b.data+b.horario).localeCompare(a.data+a.horario)); }
 function estaDentro(refId,tipo){ const ms=movsDe(refId,tipo); return ms.length>0&&ms[0].movimento==='entrada'&&!ms[0].dataSaida; }
 function ultimaMov(refId,tipo){ return movsDe(refId,tipo)[0]||null; }
+function ultimaEntrada(refId,tipo){
+  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.movimento==='entrada').sort((a,b)=>(b.data+b.horario).localeCompare(a.data+a.horario));
+  return ms[0]||null;
+}
+function ultimaSaida(refId,tipo){
+  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.movimento==='saida').sort((a,b)=>(b.data+b.horario).localeCompare(a.data+a.horario));
+  return ms[0]||null;
+}
 function tempoDecorrido(data,horario){ const d=new Date(data+'T'+horario+':00'); const diff=Date.now()-d.getTime(); if(diff<0)return 'agora'; const min=Math.floor(diff/60000); if(min<60)return min+'min'; const h=Math.floor(min/60); return h+'h'+String(min%60).padStart(2,'0'); }
 
 /* ============ NAVEGAÇÃO ============ */
@@ -410,9 +418,8 @@ function renderVeiculos(){
     </div>
     <div id="buscaAutoVeic"></div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Placa</th><th>Motorista</th><th>Empresa</th><th>Última movimentação</th><th>Status</th><th>Ações</th></tr></thead>
-      <tbody>${pagina.map(v=>{const um=ultimaMov(v.id,'veiculo');const dentro=estaDentro(v.id,'veiculo');return `<tr class="clickable" onclick="abrirPerfil('veiculo','${v.id}')"><td><b>${esc(v.placa)}</b></td><td>${esc(v.motorista)}</td><td>${esc(v.empresa)}</td><td>${um?fmtDataHora(um.data,um.horario):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('veiculo',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="6" style="text-align:center;color:var(--texto2)">Nenhum veículo encontrado</td></tr>'}</tbody>
-    </table></div>
+      <thead><tr><th>Placa</th><th>Motorista</th><th>Empresa</th><th>Entrada</th><th>Saída</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody>${pagina.map(v=>{const en=ultimaEntrada(v.id,'veiculo');const sa=ultimaSaida(v.id,'veiculo');const dentro=estaDentro(v.id,'veiculo');return `<tr class="clickable" onclick="abrirPerfil('veiculo','${v.id}')"><td><b>${esc(v.placa)}</b></td><td>${esc(v.motorista)}</td><td>${esc(v.empresa)}</td><td>${en?fmtDataHora(en.data,en.horario):'—'}</td><td>${sa?fmtDataHora(sa.data,sa.horario):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('veiculo',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--texto2)">Nenhum veículo encontrado</td></tr>'}</tbody>    </table></div>
     ${paginationHtml(estado.pagVeic,paginasN,total,'pagVeic')}
   </div>`;
   const placaExata=DB.veiculos.find(v=>v.placa===q.toUpperCase());
@@ -456,9 +463,8 @@ function renderVisitantes(){
     </div>
     <div id="buscaAutoVisit"></div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Foto</th><th>Nome</th><th>Documento</th><th>Empresa</th><th>Última movimentação</th><th>Status</th><th>Ações</th></tr></thead>
-      <tbody>${pagina.map(v=>{const um=ultimaMov(v.id,'visitante');const dentro=estaDentro(v.id,'visitante');return `<tr class="clickable" onclick="abrirPerfil('visitante','${v.id}')"><td>${avatarHtml(v)}</td><td><b>${esc(v.nome)}</b></td><td>${esc(v.documento)}</td><td>${esc(v.empresa)}</td><td>${um?fmtDataHora(um.data,um.horario):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('visitante',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--texto2)">Nenhum visitante encontrado</td></tr>'}</tbody>
-    </table></div>
+      <thead><tr><th>Foto</th><th>Nome</th><th>Documento</th><th>Empresa</th><th>Entrada</th><th>Saída</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody>${pagina.map(v=>{const en=ultimaEntrada(v.id,'visitante');const sa=ultimaSaida(v.id,'visitante');const dentro=estaDentro(v.id,'visitante');return `<tr class="clickable" onclick="abrirPerfil('visitante','${v.id}')"><td>${avatarHtml(v)}</td><td><b>${esc(v.nome)}</b></td><td>${esc(v.documento)}</td><td>${esc(v.empresa)}</td><td>${en?fmtDataHora(en.data,en.horario):'—'}</td><td>${sa?fmtDataHora(sa.data,sa.horario):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('visitante',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--texto2)">Nenhum visitante encontrado</td></tr>'}</tbody>    </table></div>
     ${paginationHtml(estado.pagVisit,paginasN,total,'pagVisit')}
   </div>`;
   const docExato=DB.visitantes.find(v=>numeroDoc(v.documento)===numeroDoc(q));
@@ -707,12 +713,11 @@ function excluirRegistro(tipo,id){
 function editarRegistro(tipo,id){
   if(tipo==='veiculo'){ const v=DB.veiculos.find(v=>v.id===id); abrirModal(`<h3>Editar Veículo — ${esc(v.placa)}</h3><div class="field"><label>Motorista</label><input id="eMotorista" value="${esc(v.motorista)}"></div><div class="field"><label>Empresa</label><input id="eEmpresa" value="${esc(v.empresa)}"></div><div class="field"><label>Observação / Motivo</label><input id="eObs" value="${esc(v.observacao)}"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoVeiculo('${id}')">Salvar</button></div>`); }
   else if(tipo==='visitante'){ const v=DB.visitantes.find(v=>v.id===id); abrirModal(`<h3>Editar Visitante — ${esc(v.nome)}</h3><div class="field"><label>Nome</label><input id="eNome" value="${esc(v.nome)}"></div><div class="field"><label>Empresa</label><input id="eEmpresa" value="${esc(v.empresa)}"></div><div class="field"><label>Observação / Motivo</label><input id="eObs" value="${esc(v.observacao)}"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoVisitante('${id}')">Salvar</button></div>`); }
-  else if(tipo==='toalha'){ const t=DB.toalhas.find(t=>t.id===id); abrirModal(`<h3>Editar Registro de Toalha</h3><div class="field"><label>Nome</label><input id="tNome" value="${esc(t.nome)}"></div><div class="field"><label>Empresa</label><input id="tEmpresa" value="${esc(t.empresa)}"></div><div class="field"><label>Quantidade</label><input type="number" id="tQtd" value="${t.quantidade}" min="1"></div><div class="field"><label>Situação</label><select id="tSit"><option value="entregue" ${t.entregue?'selected':''}>Entregue</option><option value="devolvido" ${t.devolvido?'selected':''}>Devolvido</option></select></div><div class="modal-actions"><button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoToalha('${id}')">Salvar</button></div>`); }
+else if(tipo==='toalha'){ const t=DB.toalhas.find(t=>t.id===id); abrirModal(`<h3>Editar Registro de Toalha</h3><div class="field"><label>Nome</label><input id="tNome" value="${esc(t.nome)}"></div><div class="field"><label>Empresa</label><input id="tEmpresa" value="${esc(t.empresa)}"></div><div class="field"><label>Quantidade</label><input type="number" id="tQtd" value="${t.quantidade}" min="1"></div><div class="field"><label>Situação (pode marcar os dois)</label><label style="display:flex;align-items:center;gap:8px;font-weight:500;margin-bottom:6px"><input type="checkbox" id="tEntregue" ${t.entregue?'checked':''} style="width:auto"> ✓ Entregue</label><label style="display:flex;align-items:center;gap:8px;font-weight:500"><input type="checkbox" id="tDevolvido" ${t.devolvido?'checked':''} style="width:auto"> ✕ Devolvido</label></div><div class="modal-actions"><button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarEdicaoToalha('${id}')">Salvar</button></div>`); }
 }
 function salvarEdicaoVeiculo(id){ const v=DB.veiculos.find(v=>v.id===id); v.motorista=document.getElementById('eMotorista').value; v.empresa=document.getElementById('eEmpresa').value; v.observacao=document.getElementById('eObs').value; salvarDB(); fecharModal(); renderPagina(); toast('Veículo atualizado','success'); }
 function salvarEdicaoVisitante(id){ const v=DB.visitantes.find(v=>v.id===id); v.nome=document.getElementById('eNome').value; v.empresa=document.getElementById('eEmpresa').value; v.observacao=document.getElementById('eObs').value; salvarDB(); fecharModal(); renderPagina(); toast('Visitante atualizado','success'); }
-function salvarEdicaoToalha(id){ const t=DB.toalhas.find(t=>t.id===id); t.nome=document.getElementById('tNome').value; t.empresa=document.getElementById('tEmpresa').value; t.quantidade=parseInt(document.getElementById('tQtd').value)||1; const sit=document.getElementById('tSit').value; t.entregue=sit==='entregue'; t.devolvido=sit==='devolvido'; salvarDB(); fecharModal(); renderToalhas(); toast('Registro atualizado','success'); }
-
+function salvarEdicaoToalha(id){ const t=DB.toalhas.find(t=>t.id===id); t.nome=document.getElementById('tNome').value; t.empresa=document.getElementById('tEmpresa').value; t.quantidade=parseInt(document.getElementById('tQtd').value)||1; t.entregue=document.getElementById('tEntregue').checked; t.devolvido=document.getElementById('tDevolvido').checked; salvarDB(); fecharModal(); renderToalhas(); toast('Registro atualizado','success'); }
 /* ============ MÁSCARAS E AUTOCOMPLETE ============ */
 function mascaraCPF(v){ v=v.replace(/\D/g,'').slice(0,11); let r=v; if(v.length>9)r=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6,9)+'-'+v.slice(9); else if(v.length>6)r=v.slice(0,3)+'.'+v.slice(3,6)+'.'+v.slice(6); else if(v.length>3)r=v.slice(0,3)+'.'+v.slice(3); return r; }
 function mascaraRG(v){ v=v.replace(/\D/g,'').slice(0,10); let r=v; if(v.length>8)r=v.slice(0,2)+'.'+v.slice(2,5)+'.'+v.slice(5,8)+'-'+v.slice(8); else if(v.length>5)r=v.slice(0,2)+'.'+v.slice(2,5)+'.'+v.slice(5); else if(v.length>2)r=v.slice(0,2)+'.'+v.slice(2); return r; }
@@ -840,26 +845,32 @@ function abrirNovaToalha(){
     <div class="field"><label>Empresa</label><input id="tEmpresa" placeholder="Empresa"></div>
     <div class="field"><label>Responsável pelo controle</label><input id="tResp" value="${esc(u.nome)}"></div>
     <div class="field"><label>Quantidade de toalhas</label><input type="number" id="tQtd" value="1" min="1"></div>
-    <div class="field"><label>Situação</label><div class="situacao-btns"><button class="btn btn-green" onclick="salvarToalha(true)">🟢 ✓ Entregue</button><button class="btn btn-red" onclick="salvarToalha(false)">🔴 ✕ Devolvido</button></div></div>`);
+    <div class="field"><label>Situação (pode marcar os dois)</label>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:500;margin-bottom:6px"><input type="checkbox" id="tEntregue" style="width:auto"> ✓ Entregue</label>
+      <label style="display:flex;align-items:center;gap:8px;font-weight:500"><input type="checkbox" id="tDevolvido" style="width:auto"> ✕ Devolvido</label>
+    </div>
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primary" onclick="salvarToalha()">Salvar</button></div>`);
   const nomesSet={};
   DB.toalhas.forEach(t=>{ nomesSet[t.nome+'|'+t.empresa]={nome:t.nome,empresa:t.empresa}; });
   DB.visitantes.forEach(v=>{ nomesSet[v.nome+'|'+v.empresa]={nome:v.nome,empresa:v.empresa}; });
   const itens=Object.values(nomesSet).map(p=>({busca:(p.nome+' '+p.empresa).toLowerCase(),icon:'👤',titulo:p.nome,sub:'Empresa: '+p.empresa,dados:p}));
   montarAutocomplete('tNome','tNomeList',itens,function(item){ document.getElementById('tNome').value=item.dados.nome; document.getElementById('tEmpresa').value=item.dados.empresa; });
 }
-function salvarToalha(entregue){
+function salvarToalha(){
   const u=getUsuario();
   const nome=document.getElementById('tNome').value.trim(), empresa=document.getElementById('tEmpresa').value.trim();
   const resp=document.getElementById('tResp').value.trim()||u.nome, qtd=parseInt(document.getElementById('tQtd').value)||1;
+  const entregue=document.getElementById('tEntregue').checked;
+  const devolvido=document.getElementById('tDevolvido').checked;
   const agoraS=agora();
   if(!nome){ toast('Preencha o nome da pessoa','error'); return; }
+  if(!entregue&&!devolvido){ toast('Marque Entregue e/ou Devolvido','error'); return; }
   const data=hoje(), mes=data.slice(0,7);
-  DB.toalhas.push({id:uid(),mes,data,horario:agoraS,nome,empresa,responsavel:resp,quantidade:qtd,entregue,devolvido:!entregue,observacao:'',usuario:u.nome});
+  DB.toalhas.push({id:uid(),mes,data,horario:agoraS,nome,empresa,responsavel:resp,quantidade:qtd,entregue,devolvido,observacao:'',usuario:u.nome});
   salvarDB(); fecharModal();
   estado.mesAtual=mes; estado.diaToalha=data; estado.pagToalha=1; estado.abaToalha='diario';
-  renderToalhas(); toast((entregue?'✓ Entregue':'✕ Devolvido')+' registrado às '+agoraS,'success');
+  renderToalhas(); toast('Registro salvo às '+agoraS,'success');
 }
-
 /* ============ FOTO (câmera traseira / arquivo) ============ */
 function tirarFoto(prevId,inputId){
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ toast('Câmera não suportada neste dispositivo','error'); return; }
