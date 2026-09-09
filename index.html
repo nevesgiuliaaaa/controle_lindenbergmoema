@@ -346,11 +346,14 @@ function movsDe(refId,tipo){ return DB.movimentacoes.filter(m=>m.refId===refId&&
 function estaDentro(refId,tipo){ const ms=movsDe(refId,tipo); return ms.length>0&&ms[0].movimento==='entrada'&&!ms[0].dataSaida; }
 function ultimaMov(refId,tipo){ return movsDe(refId,tipo)[0]||null; }
 function ultimaEntrada(refId,tipo){
-  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.movimento==='entrada').sort((a,b)=>(b.data+b.horario).localeCompare(a.data+a.horario));
+  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.movimento==='entrada')
+    .sort((a,b)=>(b.data+b.horario).localeCompare(a.data+a.horario));
   return ms[0]||null;
 }
+// célula: <td>${en?fmtDataHora(en.data,en.horario):'—'}</td>
 function ultimaSaida(refId,tipo){
-  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.dataSaida).sort((a,b)=>(b.dataSaida+b.horarioSaida).localeCompare(a.dataSaida+a.horarioSaida));
+  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.dataSaida)
+    .sort((a,b)=>(b.dataSaida+b.horarioSaida).localeCompare(a.dataSaida+a.horarioSaida));
   return ms[0]||null;
 }
 function tempoDecorrido(data,horario){ const d=new Date(data+'T'+horario+':00'); const diff=Date.now()-d.getTime(); if(diff<0)return 'agora'; const min=Math.floor(diff/60000); if(min<60)return min+'min'; const h=Math.floor(min/60); return h+'h'+String(min%60).padStart(2,'0'); }
@@ -829,14 +832,6 @@ function salvarEntradaVisitante(){
   DB.movimentacoes.push({id:uid(),tipo:'visitante',refId:vis.id,data:hoje(),horario:agora(),movimento:'entrada',observacao:obs,usuario:u.nome,dataSaida:null,horarioSaida:null,usuarioSaida:null});
   salvarDB(); fecharModal(); renderPagina(); toast('Entrada registrada às '+agora(),'success');
 }
-function registrarSaida(tipo,id){
-  const u=getUsuario();
-  const ms=movsDe(id,tipo), aberta=ms.find(m=>m.movimento==='entrada'&&!m.dataSaida);
-  if(aberta){ aberta.dataSaida=hoje(); aberta.horarioSaida=agora(); aberta.usuarioSaida=u.nome; }
-  else { DB.movimentacoes.push({id:uid(),tipo,refId:id,data:hoje(),horario:agora(),movimento:'saida',observacao:null,usuario:u.nome,dataSaida:hoje(),horarioSaida:agora(),usuarioSaida:u.nome}); }
-  salvarDB(); renderPagina(); toast('Saída registrada às '+agora(),'success');
-}
-
 /* ============ TOALHAS: NOVO REGISTRO (com autocomplete) ============ */
 function abrirNovaToalha(){
   const u=getUsuario();
