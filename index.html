@@ -350,7 +350,7 @@ function ultimaEntrada(refId,tipo){
   return ms[0]||null;
 }
 function ultimaSaida(refId,tipo){
-  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.movimento==='saida').sort((a,b)=>(b.data+b.horario).localeCompare(a.data+a.horario));
+  const ms=DB.movimentacoes.filter(m=>m.refId===refId&&m.tipo===tipo&&m.dataSaida).sort((a,b)=>(b.dataSaida+b.horarioSaida).localeCompare(a.dataSaida+a.horarioSaida));
   return ms[0]||null;
 }
 function tempoDecorrido(data,horario){ const d=new Date(data+'T'+horario+':00'); const diff=Date.now()-d.getTime(); if(diff<0)return 'agora'; const min=Math.floor(diff/60000); if(min<60)return min+'min'; const h=Math.floor(min/60); return h+'h'+String(min%60).padStart(2,'0'); }
@@ -419,7 +419,7 @@ function renderVeiculos(){
     <div id="buscaAutoVeic"></div>
     <div class="table-wrap"><table>
       <thead><tr><th>Placa</th><th>Motorista</th><th>Empresa</th><th>Entrada</th><th>Saída</th><th>Status</th><th>Ações</th></tr></thead>
-      <tbody>${pagina.map(v=>{const en=ultimaEntrada(v.id,'veiculo');const sa=ultimaSaida(v.id,'veiculo');const dentro=estaDentro(v.id,'veiculo');return `<tr class="clickable" onclick="abrirPerfil('veiculo','${v.id}')"><td><b>${esc(v.placa)}</b></td><td>${esc(v.motorista)}</td><td>${esc(v.empresa)}</td><td>${en?fmtDataHora(en.data,en.horario):'—'}</td><td>${sa?fmtDataHora(sa.data,sa.horario):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('veiculo',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--texto2)">Nenhum veículo encontrado</td></tr>'}</tbody>    </table></div>
+      <tbody>${pagina.map(v=>{const en=ultimaEntrada(v.id,'veiculo');const sa=ultimaSaida(v.id,'veiculo');const dentro=estaDentro(v.id,'veiculo');return `<tr class="clickable" onclick="abrirPerfil('veiculo','${v.id}')"><td><b>${esc(v.placa)}</b></td><td>${esc(v.motorista)}</td><td>${esc(v.empresa)}</td><td>${en?fmtDataHora(en.data,en.horario):'—'}</td><td>${sa?fmtDataHora(sa.dataSaida,sa.horarioSaida):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('veiculo',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--texto2)">Nenhum veículo encontrado</td></tr>'}</tbody>    </table></div>
     ${paginationHtml(estado.pagVeic,paginasN,total,'pagVeic')}
   </div>`;
   const placaExata=DB.veiculos.find(v=>v.placa===q.toUpperCase());
@@ -464,7 +464,7 @@ function renderVisitantes(){
     <div id="buscaAutoVisit"></div>
     <div class="table-wrap"><table>
       <thead><tr><th>Foto</th><th>Nome</th><th>Documento</th><th>Empresa</th><th>Entrada</th><th>Saída</th><th>Status</th><th>Ações</th></tr></thead>
-      <tbody>${pagina.map(v=>{const en=ultimaEntrada(v.id,'visitante');const sa=ultimaSaida(v.id,'visitante');const dentro=estaDentro(v.id,'visitante');return `<tr class="clickable" onclick="abrirPerfil('visitante','${v.id}')"><td>${avatarHtml(v)}</td><td><b>${esc(v.nome)}</b></td><td>${esc(v.documento)}</td><td>${esc(v.empresa)}</td><td>${en?fmtDataHora(en.data,en.horario):'—'}</td><td>${sa?fmtDataHora(sa.data,sa.horario):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('visitante',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--texto2)">Nenhum visitante encontrado</td></tr>'}</tbody>    </table></div>
+      <tbody>${pagina.map(v=>{const en=ultimaEntrada(v.id,'visitante');const sa=ultimaSaida(v.id,'visitante');const dentro=estaDentro(v.id,'visitante');return `<tr class="clickable" onclick="abrirPerfil('visitante','${v.id}')"><td>${avatarHtml(v)}</td><td><b>${esc(v.nome)}</b></td><td>${esc(v.documento)}</td><td>${esc(v.empresa)}</td><td>${en?fmtDataHora(en.data,en.horario):'—'}</td><td>${sa?fmtDataHora(sa.dataSaida,sa.horarioSaida):'—'}</td><td>${pillStatus(dentro)}</td><td onclick="event.stopPropagation()">${menuAcoes('visitante',v.id)}</td></tr>`;}).join('')||'<tr><td colspan="8" style="text-align:center;color:var(--texto2)">Nenhum visitante encontrado</td></tr>'}</tbody>    </table></div>
     ${paginationHtml(estado.pagVisit,paginasN,total,'pagVisit')}
   </div>`;
   const docExato=DB.visitantes.find(v=>numeroDoc(v.documento)===numeroDoc(q));
