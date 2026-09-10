@@ -246,159 +246,80 @@ var SUPABASE_URL='https://lhlzqeazgljnpxedphkr.supabase.co';
 var SUPABASE_ANON='sb_publishable_t9gtVUH5C-VjUftoWWns5Q_42GQAyhB';
 var SUPABASE_TABELA='app_data';
 var SUPABASE_LINHA='principal';
+
 function supabaseRest(caminho, opcoes){
-  return fetch(SUPABASE_URL + '/rest/v1/' + caminho, Object.assign({
-    headers: {
-      'apikey': SUPABASE_ANON,
-      'Authorization': 'Bearer ' + SUPABASE_ANON,
-      'Content-Type': 'application/json'
-    }
-  }, opcoes || {}));
+  return fetch(SUPABASE_URL+'/rest/v1/'+caminho, Object.assign({
+    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'}
+  }, opcoes||{}));
 }
 
 function novoDB(){
-  return {
-    versao: 1,
-    usuarios: [],
-    veiculos: [],
-    visitantes: [],
-    movimentacoes: [],
-    toalhas: [],
-    config: {
-      estoqueInicial: {},
-      observacoes: {},
-      empresa: { nome: 'LINDENBERG Engenharia', endereco: '' }
-    }
-  };
+  return {versao:1,usuarios:[],veiculos:[],visitantes:[],movimentacoes:[],toalhas:[],config:{estoqueInicial:{},observacoes:{},empresa:{nome:'LINDENBERG Engenharia',endereco:''}}};
 }
 
 function normalizarDB(d){
-  const base = novoDB();
-
-  /* 1) Chaves que faltam entram com valor padrão — registros existentes ficam intactos */
-  Object.keys(base).forEach(k => { if (d[k] === undefined) d[k] = base[k]; });
-
-  ['usuarios', 'veiculos', 'visitantes', 'movimentacoes', 'toalhas']
-    .forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
-
-  if (!d.config || typeof d.config !== 'object') d.config = {};
-  if (!d.config.estoqueInicial || typeof d.config.estoqueInicial !== 'object') d.config.estoqueInicial = {};
-  if (!d.config.observacoes || typeof d.config.observacoes !== 'object') d.config.observacoes = {};
-
-  if (!d.config.empresa || typeof d.config.empresa !== 'object') {
-    d.config.empresa = { ...base.config.empresa };
-  } else {
-    d.config.empresa = { ...base.config.empresa, ...d.config.empresa };
-  }
-
-  if (d.versao === undefined) d.versao = 1;
-
-  // 2) Migrações futuras entram AQUI, preservando o histórico.
-  //    Exemplo: if (d.versao < 2) { converter dados antigos; d.versao = 2; }
-
+  const base=novoDB();
+  Object.keys(base).forEach(k=>{ if(d[k]===undefined)d[k]=base[k]; });
+  ['usuarios','veiculos','visitantes','movimentacoes','toalhas'].forEach(k=>{ if(!Array.isArray(d[k]))d[k]=[]; });
+  if(!d.config||typeof d.config!=='object')d.config={};
+  if(!d.config.estoqueInicial||typeof d.config.estoqueInicial!=='object')d.config.estoqueInicial={};
+  if(!d.config.observacoes||typeof d.config.observacoes!=='object')d.config.observacoes={};
+  if(!d.config.empresa||typeof d.config.empresa!=='object')d.config.empresa={};
+  else d.config.empresa={...base.config.empresa,...d.config.empresa};
+  if(d.versao===undefined)d.versao=1;
   return d;
 }
 
 function salvarDB(){
-  DB.atualizadoEm = new Date().toISOString();
-  storageSet(DB_KEY, JSON.stringify(DB)); /* 1º: local (rápido e offline) */
-
-  supabaseRest(SUPABASE_TABELA + '?id=eq.' + SUPABASE_LINHA, {
-    method: 'POST',
-    body: JSON.stringify({ id: SUPABASE_LINHA, data: DB }),
-    headers: { 'Prefer': 'resolution=merge-duplicates' }
-  })
-    .then(r => { if (!r.ok) console.warn('Supabase: erro ao salvar (código ' + r.status + ')'); })
-    .catch(() => console.warn('Supabase: offline — salvo apenas neste aparelho.'));
+  DB.atualizadoEm=new Date().toISOString();
+  storageSet(DB_KEY, JSON.stringify(DB));
+  supabaseRest(SUPABASE_TABELA, {
+    method:'POST',
+    body:JSON.stringify({id:SUPABASE_LINHA, data:DB}),
+    headers:{'Prefer':'resolution=merge-duplicates'}
+  }).then(r=>{
+    if(!r.ok){ console.warn('Supabase: erro ao salvar (código '+r.status+')'); }
+    else { console.log('Supabase: salvo na nuvem com sucesso'); }
+  }).catch(()=>console.warn('Supabase: offline — salvo apenas neste aparelho.'));
 }
 
 function carregarDB(){
-  const raw = storageGet(DB_KEY);
-  let tinhaLocal = false;
-
-  if (raw) {
-    try {
-      DB = normalizarDB(JSON.parse(raw));
-      tinhaLocal = true;
-    } catch (e) {
-      /* JSON corrompido: guarda cópia de segurança antes de recomeçar */
-      try { storageSet('lindenberg_corrompido_' + Date.now(), raw); } catch (_) {}
-    }
+  const raw=storageGet(DB_KEY);
+  let tinhaLocal=false;
+  if(raw){
+    try{ DB=normalizarDB(JSON.parse(raw)); tinhaLocal=true; }
+    catch(e){ try{ storageSet('lindenberg_corrompido_'+Date.now(), raw); }catch(_){} }
   }
-
-  if (typeof DB === 'undefined' || !DB || typeof DB !== 'object') {
-    DB = novoDB();
-    semear();
-  }
-
-  if (tinhaLocal) storageSet(DB_KEY, JSON.stringify(DB));
-
+  if(!DB||typeof DB!=='object'){ DB=novoDB(); semear(); }
+  if(tinhaLocal) storageSet(DB_KEY, JSON.stringify(DB));
   carregarRemoto(tinhaLocal);
 }
 
 function carregarRemoto(tinhaLocal){
-  supabaseRest(SUPABASE_TABELA + '?id=eq.' + SUPABASE_LINHA + '&select=data')
-    .then(r => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
-    .then(linhas => {
-      const remoto = (linhas && linhas[0] && linhas[0].data) || null;
-      const remotoOk = remoto && typeof remoto === 'object';
-
-      if (remotoOk) {
-        const remotoT = new Date(remoto.atualizadoEm || 0).getTime() || 0;
-        const localT = DB.atualizadoEm ? new Date(DB.atualizadoEm).getTime() : 0;
-        const antes = JSON.stringify(DB);
-
-        if (!tinhaLocal || remotoT > localT) {
-          /* Nuvem mais nova (ou aparelho novo): adota os dados da nuvem */
-          DB = normalizarDB(remoto);
-          storageSet(DB_KEY, JSON.stringify(DB));
-        } else if (localT > remotoT) {
-          /* Local mais novo: atualiza a nuvem com os dados locais */
-          salvarDB();
+  supabaseRest(SUPABASE_TABELA+'?select=data&id=eq.'+SUPABASE_LINHA)
+    .then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+    .then(linhas=>{
+      const remoto=(linhas&&linhas[0]&&linhas[0].data)||null;
+      const remotoOk=remoto&&typeof remoto==='object';
+      if(remotoOk){
+        const remotoT=new Date(remoto.atualizadoEm||0).getTime()||0;
+        const localT=DB.atualizadoEm?new Date(DB.atualizadoEm).getTime():0;
+        const antes=JSON.stringify(DB);
+        if(!tinhaLocal || remotoT>localT){ DB=normalizarDB(remoto); storageSet(DB_KEY, JSON.stringify(DB)); console.log('Supabase: dados sincronizados da nuvem'); }
+        else if(localT>remotoT){ salvarDB(); }
+        if(antes!==JSON.stringify(DB)){
+          if(typeof renderMenu==='function') renderMenu();
+          if(typeof renderPagina==='function') renderPagina();
         }
-
-        if (antes !== JSON.stringify(DB)) {
-          if (typeof renderMenu === 'function') renderMenu();
-          if (typeof renderPagina === 'function') renderPagina();
-        }
-      } else if (tinhaLocal) {
-        /* Nuvem vazia: envia os dados locais para a nuvem */
-        salvarDB();
-      }
+      } else if(tinhaLocal){ salvarDB(); }
     })
-    .catch(() => { /* offline: segue com os dados locais */ });
+    .catch(()=>{ /* offline: segue com os dados locais */ });
 }
 
-function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-
-function hoje(){ const d = new Date(); return d.toISOString().slice(0, 10); }
-
-function agora(){
-  const d = new Date();
-  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
-}
-
-function fmtData(iso){
-  if (!iso) return '—';
-  const p = iso.split('-');
-  return p[2] + '/' + p[1] + '/' + p[0];
-}
-
-function fmtDataHora(iso, h){ return fmtData(iso) + ' ' + h; }
-
-function nomeMes(key){
-  const p = key.split('-');
-  const m = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-  return m[parseInt(p[1]) - 1] + ' de ' + p[0];
-}
-
-function numeroDoc(v){ return (v || '').replace(/\D/g, ''); }
-/* ============ SEMEADOR ============ */
-function semear(){
-  DB.usuarios.push({id:uid(),nome:'Portaria',email:'portaria@lindenberg.com',senha:'Limoema26',funcao:'Portaria',foto:'',ativo:true});
-  const mes=hoje().slice(0,7);
-  DB.config.estoqueInicial[mes]=27;
-}
+/* ===== SYNC AUTOMÁTICO — busca mudanças da nuvem a cada 15s ===== */
+setInterval(function(){
+  if(typeof carregarRemoto==='function') carregarRemoto(true);
+}, 15000);
 /* ============ HELPERS ============ */
 function getUsuario(){ return DB.usuarios.find(u=>u.id===sessao)||DB.usuarios[0]; }
 function iniciais(nome){ const p=nome.trim().split(/\s+/); return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase(); }
