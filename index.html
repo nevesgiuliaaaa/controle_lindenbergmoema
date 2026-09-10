@@ -248,11 +248,17 @@ var SUPABASE_TABELA='app_data';
 var SUPABASE_LINHA='principal';
 
 function supabaseRest(caminho, opcoes){
-  return fetch(SUPABASE_URL+'/rest/v1/'+caminho, Object.assign({
-    headers:{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'}
-  }, opcoes||{}));
+  const base = {
+    headers: {
+      'apikey': SUPABASE_ANON,
+      'Authorization': 'Bearer ' + SUPABASE_ANON,
+      'Content-Type': 'application/json'
+    }
+  };
+  const extras = opcoes || {};
+  const headers = Object.assign({}, base.headers, extras.headers || {});
+  return fetch(SUPABASE_URL + '/rest/v1/' + caminho, Object.assign({}, base, extras, { headers: headers }));
 }
-
 function novoDB(){
   return {versao:1,usuarios:[],veiculos:[],visitantes:[],movimentacoes:[],toalhas:[],config:{estoqueInicial:{},observacoes:{},empresa:{nome:'LINDENBERG Engenharia',endereco:''}}};
 }
