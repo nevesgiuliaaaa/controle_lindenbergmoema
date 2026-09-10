@@ -242,11 +242,10 @@ function storageRemove(key){ try{ localStorage.removeItem(key); }catch(e){} dele
 const DB_KEY='lindenberg_v1', SES_KEY='lindenberg_sessao';
 let DB=null, sessao=null, estado={pagina:'inicio', filtroVeic:'todos', filtroVisit:'todos', pagVeic:1, pagVisit:1, pagToalha:1, mesAtual:'2026-09', abaToalha:'diario', diaToalha:null, abaHistorico:'veiculos', abaPerfil:'historico'};
 /* ===== SUPABASE — BANCO ONLINE (sincroniza entre aparelhos) ===== */
-const SUPABASE_URL = 'https://lhlzqeazgljnpxedphkr.supabase.co';
-const SUPABASE_ANON = 'sb_publishable_t9gtVUH5C-VjUftoWWns5Q_42GQAyhB';
-const SUPABASE_TABELA = 'app_data';
-const SUPABASE_LINHA = 'principal';
-
+var SUPABASE_URL='https://lhlzqeazgljnpxedphkr.supabase.co';
+var SUPABASE_ANON='sb_publishable_t9gtVUH5C-VjUftoWWns5Q_42GQAyhB';
+var SUPABASE_TABELA='app_data';
+var SUPABASE_LINHA='principal';
 function supabaseRest(caminho, opcoes){
   return fetch(SUPABASE_URL + '/rest/v1/' + caminho, Object.assign({
     headers: {
