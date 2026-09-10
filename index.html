@@ -191,7 +191,7 @@ video{width:100%;border-radius:8px;margin-bottom:10px;background:#000;min-height
 
 <div id="login">
   <div class="login-card">
-    <img class="logo" id="loginLogo" src="logocontrole.jpeg" alt="LINDENBERG" onerror="logoLoginFalhou(this)">
+    <img class="logo" id="loginLogo" src="logocontrole.jpg" alt="LINDENBERG" onerror="logoLoginFalhou(this)">
     <div id="loginFallback" style="display:none;font-family:Georgia,serif;font-size:26px;color:var(--bordo);margin-bottom:20px">LINDENBERG<small style="display:block;font-family:Inter;font-size:10px;letter-spacing:4px;color:#666">DESDE 1954</small></div>
     <h1>Controle de Acesso</h1>
     <p>Acesse o sistema de portaria</p>
@@ -206,7 +206,7 @@ video{width:100%;border-radius:8px;margin-bottom:10px;background:#000;min-height
   <div class="layout">
     <aside class="sidebar" id="sidebar">
       <div class="logo-wrap">
-        <img src="logocontrole.jpeg" alt="LINDENBERG" onerror="this.style.display='none';document.getElementById('sideFallback').style.display='block'">
+        <img src="logocontrole.jpg" alt="LINDENBERG" onerror="this.style.display='none';document.getElementById('sideFallback').style.display='block'">
         <div id="sideFallback" style="display:none" class="fallback">LINDENBERG<small>DESDE 1954</small></div>
       </div>
       <nav id="menuNav"></nav>
@@ -243,7 +243,9 @@ let _memStore = {};
 function storageGet(key){ try{ return localStorage.getItem(key); }catch(e){ return _memStore[key]!==undefined?_memStore[key]:null; } }
 function storageSet(key,val){ try{ localStorage.setItem(key,val); return true; }catch(e){ _memStore[key]=val; return false; } }
 function storageRemove(key){ try{ localStorage.removeItem(key); }catch(e){} delete _memStore[key]; }
-
+function logoLoginFalhou(img){
+  if(img){ img.onerror=null; img.src='logocontrole.jpg'; }
+}
 /* ============ BANCO DE DADOS ============ */
 const DB_KEY='lindenberg_v1', SES_KEY='lindenberg_sessao';
 let DB=null, sessao=null, estado={pagina:'inicio', filtroVeic:'todos', filtroVisit:'todos', pagVeic:1, pagVisit:1, pagToalha:1, mesAtual:'2026-09', abaToalha:'diario', diaToalha:null, abaHistorico:'veiculos', abaPerfil:'historico'};
