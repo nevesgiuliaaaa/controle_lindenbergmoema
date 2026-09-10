@@ -230,7 +230,13 @@ video{width:100%;border-radius:8px;margin-bottom:10px;background:#000;min-height
 <div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalBox"></div></div>
 <div class="modal-overlay" id="confirmOverlay"><div class="modal" style="width:400px" id="confirmBox"></div></div>
 <div class="toast" id="toast"></div>
+<div id="modalOverlay" class="overlay">
+  <div id="modalBox" class="modal-box"></div>
+</div>
 
+<div id="confirmOverlay" class="overlay">
+  <div id="confirmBox" class="modal-box"></div>
+</div>
 <script>
 /* ============ ARMAZENAMENTO SEGURO ============ */
 let _memStore = {};
@@ -975,16 +981,24 @@ function atualizarRelogio(){
 try{
   carregarDB();
   const s=storageGet(SES_KEY);
-  if(s&&DB.usuarios.find(u=>u.id===s)){ sessao=s; document.getElementById('login').style.display='none'; document.getElementById('app').style.display='block'; navegar('inicio'); }
-  else { document.getElementById('login').style.display='flex'; }
+  if(s && DB.usuarios.find(u=>u.id===s)){ sessao=s; const _l=document.getElementById('login'); if(_l)_l.style.display='none'; const _a=document.getElementById('app'); if(_a)_a.style.display='block'; navegar('inicio'); }
+  else { const _l=document.getElementById('login'); if(_l)_l.style.display='flex'; }
   atualizarRelogio();
   setInterval(atualizarRelogio,1000);
-  document.getElementById('btnEntrar').addEventListener('click',fazerLogin);
-  document.getElementById('loginSenha').addEventListener('keydown',function(e){ if(e.key==='Enter')fazerLogin(); });
 }catch(err){
   console.error('Erro ao iniciar o sistema:',err);
-  document.getElementById('login').style.display='flex';
+  var _lg=document.getElementById('login'); if(_lg)_lg.style.display='flex';
 }
+
+/* Listeners de login — FORA do try, protegidos individualmente */
+function _ligarLogin(el){
+  if(!el) return;
+  el.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.keyCode===13){ e.preventDefault(); fazerLogin(); } });
+}
+var _be=document.getElementById('btnEntrar');    if(_be) _be.addEventListener('click',function(e){ e.preventDefault(); fazerLogin(); });
+var _le=document.getElementById('loginEmail');   _ligarLogin(_le);
+var _ls=document.getElementById('loginSenha');   _ligarLogin(_ls);
+
 /* ============ FUNÇÕES UTILITÁRIAS ============ */
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function hoje(){ const d=new Date(); return d.toISOString().slice(0,10); }
@@ -1000,13 +1014,6 @@ function semear(){
   const mes=hoje().slice(0,7);
   DB.config.estoqueInicial[mes]=27;
 }
-<div id="modalOverlay" class="overlay">
-  <div id="modalBox" class="modal-box"></div>
-</div>
-
-<div id="confirmOverlay" class="overlay">
-  <div id="confirmBox" class="modal-box"></div>
-</div>
 
 </script>
 </body>
