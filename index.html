@@ -185,6 +185,29 @@ video{width:100%;border-radius:8px;margin-bottom:10px;background:#000;min-height
   .topbar-right{width:100%;justify-content:space-between}
 }
 @media(max-width:480px){.cards{grid-template-columns:1fr}}
+/* ===== DROPDOWNS POR CIMA DE TUDO ===== */
+.dropdown-menu,
+.dropdown-list,
+.select-options,
+.autocomplete-list,
+.suggestions-list,
+.opcoes,
+.lista-opcoes {
+  position: absolute !important;
+  z-index: 99999 !important;
+}
+
+/* Libera o recorte nos pais que prendem a lista */
+.modal,
+.modal-content,
+.card,
+.panel,
+.content-area,
+.main-content,
+.form-group {
+  overflow: visible !important;
+}
+
 </style>
 </head>
 <body>
@@ -1016,7 +1039,6 @@ function semear(){
   const mes=hoje().slice(0,7);
   DB.config.estoqueInicial[mes]=27;
 }
-
 </script>
 </body>
 </html>
